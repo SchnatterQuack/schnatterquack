@@ -42,8 +42,7 @@ input,select{border-radius:999px}
 /* Topbar & HUD */
 .tb{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:9}
 .lv{background:rgba(255,253,248,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px solid #fff;border-radius:20px;padding:5px 12px;font-size:12.5px;box-shadow:0 4px 14px rgba(20,30,24,.18)}
-.mini{height:5px;background:rgba(63,51,44,.14);border-radius:4px;margin-top:3px;width:78px}
-.mini i{display:block;height:100%;background:linear-gradient(90deg,#8bc34a,#4e8232);border-radius:4px}
+.mini{height:5px;background:rgba(63,51,44,.14);border-radius:4px;margin-top:3px;width:78px}.mini i{display:block;height:100%;background:linear-gradient(90deg,#8bc34a,#4e8232);border-radius:4px}
 .pts{background:linear-gradient(180deg,#ffe89e,#f2c64d);border:1.5px solid #fff;color:#473100;border-radius:999px;padding:6px 13px;font-weight:800;font-size:14px;box-shadow:0 4px 14px rgba(20,30,24,.2)}
 
 .room-pill{position:absolute;top:calc(56px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:rgba(36,48,38,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,245,215,.4);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;color:#fff7e6;z-index:8;white-space:nowrap}
@@ -92,6 +91,7 @@ body.sheet-open .dock,body.sheet-open .deco-drawer{opacity:0!important;pointer-e
 .deco-drawer.expanded{height:92%;padding-bottom:24px}
 .deco-drag-bar{width:48px;height:5px;border-radius:999px;background:#cbbba8;margin:8px auto 2px;cursor:ns-resize}
 .deco-tabs{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.deco-tabs::-webkit-scrollbar{display:none}
 .deco-tabs button{flex:none;padding:7px 13px;font-size:12.5px;font-weight:800;white-space:nowrap}
 .deco-grid{flex:1;overflow:auto;padding:12px 16px 28px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .deco-card{background:rgba(255,253,248,.95);border-radius:22px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;border:2px solid transparent;font-size:12px;font-weight:800;box-shadow:0 4px 12px rgba(60,45,30,.08)}
@@ -148,7 +148,7 @@ const todayStr=()=>new Date().toISOString().slice(0,10);
 
 const DEFAULT_STATE={
   pts:45, xp:120, lv:2,
-  scene:'out', // 'out' | 'room' | 'garden'
+  scene:'out',
   roomIdx:0,
   panoX:0,
   decoOpen:false, decoExpanded:false, decoTab:'furn',
@@ -206,7 +206,6 @@ function ov(html){
   el.innerHTML=html?`<div class="ov" onclick="if(event.target===this)ov()"><div>${html}</div></div>`:'';
 }
 
-/* --------- 3D SVG-Grafiken (Quaki, Outfits, Möbel, Wald & Draußen-Deko) --------- */
 function quaki3dSvg(){
   return `<svg viewBox="0 0 200 220" width="100%" height="100%" style="overflow:visible">
     <defs>
@@ -220,26 +219,18 @@ function quaki3dSvg(){
         <stop offset="0%" stop-color="#ff8fa8" stop-opacity="0.75"/><stop offset="100%" stop-color="#ff8fa8" stop-opacity="0"/>
       </radialGradient>
     </defs>
-    <!-- Füßchen -->
     <ellipse cx="78" cy="202" rx="18" ry="8" fill="#e67e22"/>
     <ellipse cx="122" cy="202" rx="18" ry="8" fill="#e67e22"/>
-    <!-- Körper -->
     <ellipse cx="100" cy="148" rx="54" ry="52" fill="url(#qBody)"/>
     <ellipse cx="100" cy="154" rx="36" ry="34" fill="#fffbe0" opacity="0.55"/>
-    <!-- Flügel -->
     <ellipse cx="46" cy="146" rx="15" ry="28" transform="rotate(14 46 146)" fill="#ecc146"/>
     <ellipse cx="154" cy="146" rx="15" ry="28" transform="rotate(-14 154 146)" fill="#ecc146"/>
-    <!-- Kopf -->
     <circle cx="100" cy="78" r="44" fill="url(#qBody)"/>
-    <!-- Haarschopf -->
     <path d="M96 34 Q90 18 102 24 Q112 16 108 35" fill="#f7d560" stroke="#d49e2a" stroke-width="2"/>
-    <!-- Augen -->
     <circle cx="82" cy="74" r="6.5" fill="#2b211a"/><circle cx="80" cy="72" r="2.2" fill="#fff"/>
     <circle cx="118" cy="74" r="6.5" fill="#2b211a"/><circle cx="116" cy="72" r="2.2" fill="#fff"/>
-    <!-- Bäckchen -->
     <circle cx="68" cy="86" r="10" fill="url(#qCheek)"/>
     <circle cx="132" cy="86" r="10" fill="url(#qCheek)"/>
-    <!-- Schnabel -->
     <ellipse cx="100" cy="88" rx="16" ry="9" fill="url(#qBeak)"/>
     <path d="M88 88 Q100 94 112 88" stroke="#b54d12" stroke-width="2" fill="none" stroke-linecap="round"/>
   </svg>`;
@@ -250,4 +241,664 @@ function quakiWornOverlaySvg(){
   if(!w.length)return '';
   let parts='';
   if(w.includes('hat')){
-    parts+=`<g transform="translate(50,-6)"><ellipse cx="50" cy="34" rx="34" ry="10" fill="#6fa344"/><path d="M28 33 Q50 4 72 33 Z" fill="#8b
+    parts+=`<g transform="translate(50,-6)"><ellipse cx="50" cy="34" rx="34" ry="10" fill="#6fa344"/><path d="M28 33 Q50 4 72 33 Z" fill="#8bc34a"/><circle cx="62" cy="22" r="5" fill="#ff8fab"/></g>`;
+  }
+  if(w.includes('crown')){
+    parts+=`<g transform="translate(50,4)"><path d="M26 28 Q50 18 74 28" stroke="#6fa344" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="32" cy="24" r="6" fill="#ff9ebb"/><circle cx="50" cy="20" r="7" fill="#ffe48f"/><circle cx="68" cy="24" r="6" fill="#ff9ebb"/></g>`;
+  }
+  if(w.includes('glass')){
+    parts+=`<g transform="translate(50,36)"><circle cx="32" cy="38" r="12" fill="rgba(255,255,255,0.28)" stroke="#6b4223" stroke-width="3.5"/><circle cx="68" cy="38" r="12" fill="rgba(255,255,255,0.28)" stroke="#6b4223" stroke-width="3.5"/><line x1="44" y1="38" x2="56" y2="38" stroke="#6b4223" stroke-width="3.5"/></g>`;
+  }
+  if(w.includes('scarf')){
+    parts+=`<g transform="translate(50,86)"><path d="M26 20 Q50 32 74 20 Q70 34 50 35 Q30 34 26 20 Z" fill="#f78da7"/><rect x="54" y="26" width="11" height="22" rx="5" fill="#e06382"/></g>`;
+  }
+  if(w.includes('bag')){
+    parts+=`<g transform="translate(116,128)"><rect x="0" y="0" width="26" height="22" rx="8" fill="#8c5832" stroke="#ffe48f" stroke-width="1.5"/><circle cx="13" cy="11" r="3" fill="#ffe48f"/></g>`;
+  }
+  return `<div class="qk-wear-layer"><svg viewBox="0 0 200 220">${parts}</svg></div>`;
+}
+
+function furn3dSvg(t){
+  const defs=`<defs>
+    <radialGradient id="fWood" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#c99163"/><stop offset="100%" stop-color="#754624"/></radialGradient>
+    <radialGradient id="fMoss" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#b5e384"/><stop offset="100%" stop-color="#4d7a2b"/></radialGradient>
+    <radialGradient id="fPink" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#ffd6e2"/><stop offset="100%" stop-color="#d66584"/></radialGradient>
+    <radialGradient id="fGold" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#fff3b0"/><stop offset="100%" stop-color="#e0a82e"/></radialGradient>
+  </defs>`;
+  switch(t){
+    case 'Sessel': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<rect x="20" y="24" width="60" height="44" rx="18" fill="url(#fPink)"/><rect x="14" y="44" width="72" height="32" rx="14" fill="#e87f9b"/><rect x="24" y="74" width="10" height="14" rx="4" fill="url(#fWood)"/><rect x="66" y="74" width="10" height="14" rx="4" fill="url(#fWood)"/></svg>`;
+    case 'Tisch': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<ellipse cx="50" cy="48" rx="40" ry="16" fill="url(#fWood)"/><rect x="28" y="54" width="9" height="30" rx="4" fill="#633a1c"/><rect x="63" y="54" width="9" height="30" rx="4" fill="#633a1c"/><circle cx="50" cy="45" r="7" fill="url(#fGold)"/></svg>`;
+    case 'Bett': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<rect x="14" y="26" width="72" height="56" rx="14" fill="url(#fWood)"/><rect x="20" y="34" width="60" height="42" rx="10" fill="#fff8e8"/><rect x="20" y="48" width="60" height="28" rx="10" fill="url(#fMoss)"/><rect x="26" y="36" width="22" height="12" rx="6" fill="#ffd6e2"/><rect x="52" y="36" width="22" height="12" rx="6" fill="#ffd6e2"/></svg>`;
+    case 'Pflanze': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<path d="M32 60 L68 60 L62 88 L38 88 Z" fill="url(#fWood)"/><ellipse cx="50" cy="44" rx="16" ry="26" fill="url(#fMoss)"/><ellipse cx="34" cy="50" rx="14" ry="18" transform="rotate(-25 34 50)" fill="#6fa344"/><ellipse cx="66" cy="50" rx="14" ry="18" transform="rotate(25 66 50)" fill="#6fa344"/></svg>`;
+    case 'Lampe': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<rect x="46" y="48" width="8" height="36" rx="4" fill="url(#fWood)"/><ellipse cx="50" cy="84" rx="20" ry="6" fill="#633a1c"/><polygon points="28,48 72,48 62,20 38,20" fill="url(#fGold)"/></svg>`;
+    case 'Bücherregal': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<rect x="22" y="16" width="56" height="72" rx="10" fill="url(#fWood)"/><rect x="28" y="24" width="44" height="24" rx="4" fill="#4f2d14"/><rect x="28" y="54" width="44" height="24" rx="4" fill="#4f2d14"/><rect x="32" y="28" width="8" height="18" fill="url(#fPink)"/><rect x="42" y="26" width="8" height="20" fill="url(#fMoss)"/><rect x="52" y="30" width="8" height="16" fill="url(#fGold)"/></svg>`;
+    default: return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<ellipse cx="50" cy="64" rx="42" ry="20" fill="url(#fMoss)"/></svg>`;
+  }
+}
+
+function shopItem3dSvg(id){
+  const defs=`<defs>
+    <radialGradient id="sMoss" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#b5e384"/><stop offset="100%" stop-color="#4d7a2b"/></radialGradient>
+    <radialGradient id="sPink" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#ffd6e2"/><stop offset="100%" stop-color="#d66584"/></radialGradient>
+    <radialGradient id="sGold" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#fff3b0"/><stop offset="100%" stop-color="#e0a82e"/></radialGradient>
+    <radialGradient id="sWood" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#c99163"/><stop offset="100%" stop-color="#754624"/></radialGradient>
+    <radialGradient id="sWater" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#b8f2ff"/><stop offset="65%" stop-color="#56b4d3"/><stop offset="100%" stop-color="#2c6e8a"/></radialGradient>
+  </defs>`;
+  switch(id){
+    case 'hat': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<ellipse cx="50" cy="64" rx="38" ry="12" fill="url(#sMoss)"/><path d="M26 62 Q50 22 74 62 Z" fill="#7cb342"/><circle cx="62" cy="42" r="6" fill="url(#sPink)"/></svg>`;
+    case 'scarf': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<path d="M24 44 Q50 60 76 44 Q72 62 50 64 Q28 62 24 44 Z" fill="url(#sPink)"/><rect x="54" y="54" width="14" height="30" rx="6" fill="#e87896"/></svg>`;
+    case 'glass': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<circle cx="33" cy="52" r="16" fill="#e6f7ff" fill-opacity="0.55" stroke="url(#sWood)" stroke-width="5"/><circle cx="67" cy="52" r="16" fill="#e6f7ff" fill-opacity="0.55" stroke="url(#sWood)" stroke-width="5"/><path d="M49 50 Q50 46 51 50" stroke="url(#sWood)" stroke-width="5" fill="none"/></svg>`;
+    case 'crown': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<path d="M22 60 Q50 46 78 60" stroke="url(#sMoss)" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="30" cy="54" r="9" fill="url(#sPink)"/><circle cx="50" cy="48" r="10" fill="url(#sGold)"/><circle cx="70" cy="54" r="9" fill="url(#sPink)"/></svg>`;
+    case 'bag': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<path d="M32 42 Q50 14 68 42" stroke="#8c5832" stroke-width="5" fill="none"/><rect x="28" y="40" width="44" height="38" rx="14" fill="url(#sWood)"/><circle cx="50" cy="58" r="5" fill="url(#sGold)"/></svg>`;
+    case 'flow': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<ellipse cx="50" cy="76" rx="38" ry="14" fill="url(#sMoss)"/><circle cx="34" cy="62" r="11" fill="url(#sPink)"/><circle cx="64" cy="60" r="12" fill="#fff8e8"/><circle cx="50" cy="48" r="11" fill="url(#sGold)"/></svg>`;
+    case 'pond': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<ellipse cx="50" cy="66" rx="42" ry="20" fill="url(#sWater)" stroke="#8fa189" stroke-width="5"/><ellipse cx="38" cy="64" rx="11" ry="5" fill="url(#sMoss)"/><circle cx="38" cy="60" r="5" fill="url(#sPink)"/></svg>`;
+    case 'mate': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<ellipse cx="50" cy="64" rx="22" ry="18" fill="#a8d67a"/><circle cx="50" cy="40" r="15" fill="#6fa344"/><ellipse cx="58" cy="43" rx="8" ry="4" fill="#ffb74d"/></svg>`;
+    case 'baby': return `<svg viewBox="0 0 100 100" width="100%" height="100%">${defs}<circle cx="50" cy="64" r="16" fill="url(#sGold)"/><circle cx="50" cy="44" r="13" fill="url(#sGold)"/><polygon points="50,46 45,51 55,51" fill="#ff9e44"/></svg>`;
+    default: return furn3dSvg('Moos-Teppich');
+  }
+}
+
+function forestPanoTileSvg(){
+  return `<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+    <defs>
+      <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1d3b2b"/><stop offset="55%" stop-color="#356144"/><stop offset="100%" stop-color="#588547"/></linearGradient>
+      <radialGradient id="sunBeam" cx="50%" cy="22%" r="60%"><stop offset="0%" stop-color="#fff4bd" stop-opacity="0.45"/><stop offset="100%" stop-color="#fff4bd" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="1200" height="700" fill="url(#skyG)"/>
+    <rect width="1200" height="700" fill="url(#sunBeam)"/>
+    <path d="M0 440 Q220 350 480 430 T960 410 T1200 440 L1200 700 L0 700 Z" fill="#294d2b"/>
+    <path d="M0 490 Q300 430 620 490 T1200 475 L1200 700 L0 700 Z" fill="#3a6933"/>
+    <path d="M0 535 Q400 500 800 535 T1200 525 L1200 700 L0 700 Z" fill="#4c823b"/>
+    <g fill="#193320"><rect x="110" y="210" width="28" height="260" rx="8"/><circle cx="124" cy="200" r="78"/><circle cx="80" cy="230" r="54"/><circle cx="168" cy="230" r="54"/></g>
+    <g fill="#1d3b24"><rect x="1030" y="190" width="32" height="280" rx="8"/><circle cx="1046" cy="180" r="85"/><circle cx="995" cy="215" r="58"/><circle cx="1095" cy="215" r="58"/></g>
+    <g transform="translate(340,350)">
+      <rect x="20" y="55" width="130" height="95" rx="16" fill="#7c4d2b"/>
+      <polygon points="8,62 85,8 162,62" fill="#4c7a34"/>
+      <rect x="68" y="92" width="34" height="58" rx="14" fill="#4a2b14"/>
+      <circle cx="44" cy="96" r="14" fill="#ffe89e" stroke="#4a2b14" stroke-width="4"/>
+      <circle cx="126" cy="96" r="14" fill="#ffe89e" stroke="#4a2b14" stroke-width="4"/>
+    </g>
+    <g transform="translate(760,415)">
+      <rect x="15" y="30" width="14" height="75" rx="6" fill="#8c5832"/>
+      <rect x="105" y="30" width="14" height="75" rx="6" fill="#8c5832"/>
+      <path d="M22 45 L112 45 M22 72 L112 72" stroke="#a86f44" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="22" cy="26" r="9" fill="#ff9ebb"/><circle cx="112" cy="26" r="9" fill="#ffe48f"/>
+    </g>
+  </svg>`;
+}
+
+const QUOTES=[
+  'Schön, dass du da bist 💛 Kein Stress heute!',
+  'Ein kleiner Schritt reicht schon völlig aus 🌱',
+  'Quaki passt gut auf dein Moos-Zuhause auf 🦆',
+  'Atme kurz durch – du machst das super 🌿',
+  'Wisch nach links oder rechts, um die Lichtung zu erkunden ✨'
+];
+
+function renderTop(){
+  const need=S.lv*100;
+  const pct=Math.min(100,Math.round((S.xp/need)*100));
+  return `<div class="tb">
+    <div class="lv"><b>Level ${S.lv}</b> · Quaki<div class="mini"><i style="width:${pct}%"></i></div></div>
+    <div class="row">
+      <button class="rb" title="Backup & Info" onclick="openSheet('shop')">⚙️</button>
+      <div class="pts">⭐ ${S.pts}</div>
+    </div>
+  </div>`;
+}
+
+function renderWorld(){
+  const m=document.getElementById('m');
+  if(S.scene==='garden'){renderGarden();return;}
+  if(S.scene==='room'){renderRoom();return;}
+
+  const o=id=>S.owned.includes(id);
+  const ffHtml=Array.from({length:12},(_,i)=>`<i class="ff" style="left:${(i*17+9)%94}%;top:${(i*23+14)%62}%;animation-delay:${(i*0.6)%5}s"></i>`).join('');
+
+  m.innerHTML=`<div class="world" id="world">
+    ${renderTop()}
+    <div class="room-pill">🌲 Moos-Waldlichtung · <button onclick="setScene('room')">🏠 Ins Zimmer</button> · <button onclick="setScene('garden')">🌱 Garten</button></div>
+    <div class="bubble" onclick="sayNew()">${window._qMsg||QUOTES[0]}</div>
+
+    <div class="pano-track" id="pano" style="transform:translateX(${S.panoX}px)">
+      ${[0,1,2].map(()=>`<div class="pano-tile">
+        ${forestPanoTileSvg()}
+        <div class="pano-hit" style="left:28%;top:48%;width:16%;height:24%" onclick="setScene('room')">
+          <div class="pano-tag" style="left:50%;top:-14px">🏠 Gemütliches Zimmer</div>
+        </div>
+        <div class="pano-hit" style="left:62%;top:55%;width:15%;height:20%" onclick="setScene('garden')">
+          <div class="pano-tag" style="left:50%;top:-14px">🌱 Kräuter- &amp; Blumengarten</div>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <div class="firefly-layer">${ffHtml}</div>
+
+    ${o('flow')?`<div class="dc3d" style="left:17%;top:68%" onclick="hop()">${shopItem3dSvg('flow')}</div>`:''}
+    ${o('pond')?`<div class="dc3d" style="left:41%;top:66%" onclick="hop()">${shopItem3dSvg('pond')}</div>`:''}
+    ${o('mate')?`<div class="dc3d" style="left:33%;top:69%" onclick="hop()">${shopItem3dSvg('mate')}</div>`:''}
+    ${o('baby')?`<div class="dc3d" style="left:13%;top:71%;width:54px;height:54px" onclick="hop()">${shopItem3dSvg('baby')}</div>`:''}
+
+    <div class="qk-stage" onclick="hop()">
+      <div class="qk-ground-shadow"></div>
+      <div class="qk-3d-wrap" id="qk-rig">${quaki3dSvg()}${quakiWornOverlaySvg()}</div>
+    </div>
+  </div>`;
+  bindPanoDrag();
+}
+
+function renderRoom(){
+  const r=S.rooms[S.roomIdx]||S.rooms[0];
+  const m=document.getElementById('m');
+  m.innerHTML=`<div class="world" style="background:linear-gradient(180deg,${r.wall} 0%,#cbb89d 62%,${r.floor} 62%,#593a20 100%)">
+    ${renderTop()}
+    <div class="room-pill">
+      <button onclick="setScene('out')">← Wald</button>
+      <span>🏠 ${r.name}</span>
+      <button onclick="nextRoom()">Wechseln ↻</button>
+    </div>
+    <div class="bubble" onclick="sayNew()">${window._qMsg||'Ziehe Möbel einfach an deinen Lieblingsplatz 🛋️'}</div>
+    <div id="room-stage" style="position:relative;width:100%;height:100%">
+      ${r.items.map(it=>`<div class="f3d-item" data-id="${it.id}" style="left:${it.x}%;top:${it.y}%;--dscale:${(0.82+(it.y-55)*0.008).toFixed(2)}">
+        <div class="f3d-model">${furn3dSvg(it.t)}</div>
+      </div>`).join('')}
+    </div>
+    <div class="qk-stage" onclick="hop()">
+      <div class="qk-ground-shadow"></div>
+      <div class="qk-3d-wrap" id="qk-rig">${quaki3dSvg()}${quakiWornOverlaySvg()}</div>
+    </div>
+  </div>`;
+  bindFurnitureDrag();
+}
+
+function renderGarden(){
+  const m=document.getElementById('m');
+  m.innerHTML=`<div class="garden-canvas" id="garden-stage">
+    ${renderTop()}
+    <div class="room-pill">
+      <button onclick="setScene('out')">← Wald</button>
+      <span>🌱 Kleiner Garten</span>
+      <button onclick="waterAll()">💧 Alle gießen</button>
+    </div>
+    <div class="bubble" onclick="sayNew()">Tippe ein Beet an zum Gießen oder Ernten 🍓</div>
+    ${S.beds.map(b=>`<div class="bed3d" data-id="${b.id}" style="left:${b.x}%;top:${b.y}%;--bscale:${(0.85+(b.y-35)*0.004).toFixed(2)}" onclick="tapBed('${b.id}')">
+      <div class="bed3d-box">
+        <svg viewBox="0 0 160 110" width="100%" height="100%">
+          <rect x="8" y="18" width="144" height="82" rx="22" fill="#6e4222" stroke="#9e673b" stroke-width="5"/>
+          <rect x="16" y="24" width="128" height="66" rx="16" fill="${b.water?'#3b2818':'#5c432c'}"/>
+        </svg>
+        <div class="bed3d-crops">${b.crops.join('')}</div>
+        ${b.water?'':'<span class="bed3d-water">💧 Durst</span>'}
+      </div>
+      <div class="bed3d-tag">${b.n}</div>
+    </div>`).join('')}
+  </div>`;
+  bindBedDrag();
+}
+
+function setScene(sc){S.scene=sc;S.decoOpen=false;drawDecoDrawer();save();renderWorld();}
+function nextRoom(){S.roomIdx=(S.roomIdx+1)%S.rooms.length;save();renderRoom();}
+function hop(){
+  const el=document.getElementById('qk-rig');
+  if(el){el.classList.remove('hop3d');void el.offsetWidth;el.classList.add('hop3d');}
+  sayNew();
+}
+function sayNew(){
+  window._qMsg=QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  const b=document.querySelector('.bubble');
+  if(b)b.textContent=window._qMsg;
+}
+
+function bindPanoDrag(){
+  const w=document.getElementById('world'), p=document.getElementById('pano');
+  if(!w||!p)return;
+  let sx=0, startX=S.panoX, drag=false;
+  w.onpointerdown=e=>{if(e.target.closest('button,.qk-stage,.dc3d,.pano-hit'))return;drag=true;sx=e.clientX;startX=S.panoX;};
+  w.onpointermove=e=>{if(!drag)return;const dx=e.clientX-sx;S.panoX=Math.max(-window.innerWidth*2.1,Math.min(0,startX+dx));p.style.transform=`translateX(${S.panoX}px)`;};
+  w.onpointerup=()=>{if(drag){drag=false;save();}};
+}
+function bindFurnitureDrag(){
+  const st=document.getElementById('room-stage');if(!st)return;
+  st.querySelectorAll('.f3d-item').forEach(el=>{
+    el.onpointerdown=e=>{
+      e.stopPropagation();
+      const id=el.dataset.id;
+      const move=ev=>{
+        const rect=st.getBoundingClientRect();
+        const x=Math.max(12,Math.min(88,Math.round(((ev.clientX-rect.left)/rect.width)*100)));
+        const y=Math.max(52,Math.min(88,Math.round(((ev.clientY-rect.top)/rect.height)*100)));
+        el.style.left=x+'%';el.style.top=y+'%';
+        const it=S.rooms[S.roomIdx].items.find(i=>i.id===id);
+        if(it){it.x=x;it.y=y;}
+      };
+      const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);save();};
+      window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);
+    };
+  });
+}
+function bindBedDrag(){
+  const st=document.getElementById('garden-stage');if(!st)return;
+  st.querySelectorAll('.bed3d').forEach(el=>{
+    el.onpointerdown=e=>{
+      const id=el.dataset.id;let moved=false;
+      const move=ev=>{
+        moved=true;
+        const rect=st.getBoundingClientRect();
+        const x=Math.max(18,Math.min(82,Math.round(((ev.clientX-rect.left)/rect.width)*100)));
+        const y=Math.max(26,Math.min(82,Math.round(((ev.clientY-rect.top)/rect.height)*100)));
+        el.style.left=x+'%';el.style.top=y+'%';
+        const b=S.beds.find(i=>i.id===id);if(b){b.x=x;b.y=y;}
+      };
+      const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);if(moved)save();};
+      window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);
+    };
+  });
+}
+function tapBed(id){
+  const b=S.beds.find(x=>x.id===id);if(!b)return;
+  if(!b.water){b.water=true;save();renderGarden();toast('+'+gain(2)+' ⭐ Gegossen! 💧');}
+  else{toast('+'+gain(3)+' ⭐ Frische Ernte aus „'+b.n+'“! 🌿');}
+}
+function waterAll(){
+  let c=0;S.beds.forEach(b=>{if(!b.water){b.water=true;c++;}});
+  save();renderGarden();
+  toast(c?`+${gain(c*2)} ⭐ Alle Beete gegossen! 💧`:'Alle Beete sind schon frisch gegossen 🌱');
+}
+
+function renderDock(){
+  const openTodos=S.tasks.filter(t=>!t.done).length;
+  document.getElementById('dock').innerHTML=`
+    <button class="dock-btn" onclick="openSheet('today')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3c634b" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>
+      <span>Heute</span>
+    </button>
+    <button class="dock-btn" onclick="openSheet('day')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3c634b" stroke-width="2.2"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2v4m8-4v4M3 10h18"/></svg>
+      <span>Kalender</span>
+    </button>
+    <button class="plus" onclick="addMenu()">+</button>
+    <button class="dock-btn" onclick="openSheet('todo')">
+      ${openTodos?`<i>${openTodos}</i>`:''}
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3c634b" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>To-dos</span>
+    </button>
+    <button class="dock-btn" onclick="toggleDeco()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3c634b" stroke-width="2.2"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span>Deko</span>
+    </button>
+  `;
+}
+
+const SHOP_WEAR=[
+  {id:'hat',n:'Blätterhut',c:10},{id:'crown',n:'Blütenkrone',c:15},
+  {id:'glass',n:'Runde Brille',c:12},{id:'scarf',n:'Kuschelschal',c:14},{id:'bag',n:'Umhängetasche',c:18}
+];
+const SHOP_OUT=[
+  {id:'flow',n:'Blumenbeet',c:12},{id:'pond',n:'Glüh-Teich',c:25},
+  {id:'mate',n:'Entenfreund',c:30},{id:'baby',n:'Kleines Küken',c:22}
+];
+const FURNITURE_LIST=[
+  {t:'Sessel',c:15},{t:'Tisch',c:12},{t:'Bett',c:20},
+  {t:'Pflanze',c:8},{t:'Lampe',c:10},{t:'Bücherregal',c:18}
+];
+
+function toggleDeco(){S.decoOpen=!S.decoOpen;drawDecoDrawer();}
+function drawDecoDrawer(){
+  const d=document.getElementById('deco-drawer');
+  d.classList.toggle('on',!!S.decoOpen);
+  d.classList.toggle('expanded',!!S.decoExpanded);
+  if(!S.decoOpen){d.innerHTML='';return;}
+
+  let grid='';
+  if(S.decoTab==='furn'){
+    grid=FURNITURE_LIST.map(f=>`<button class="deco-card" onclick="placeFurn('${f.t}',${f.c})">
+      <div style="width:58px;height:58px">${furn3dSvg(f.t)}</div>
+      <div>${f.t}</div>
+      <span>⭐ ${f.c}</span>
+    </button>`).join('');
+  }else if(S.decoTab==='wear'){
+    grid=SHOP_WEAR.map(s=>{
+      const owned=S.owned.includes(s.id), worn=S.worn.includes(s.id);
+      return `<button class="deco-card ${worn?'worn':owned?'owned':''}" onclick="buy('${s.id}',${s.c},true)">
+        <div style="width:58px;height:58px">${shopItem3dSvg(s.id)}</div>
+        <div>${s.n}</div>
+        <span>${owned?(worn?'Angezogen ✓':'Anziehen'):'⭐ '+s.c}</span>
+      </button>`;
+    }).join('');
+  }else{
+    grid=SHOP_OUT.map(s=>{
+      const owned=S.owned.includes(s.id);
+      return `<button class="deco-card ${owned?'owned':''}" onclick="buy('${s.id}',${s.c},false)">
+        <div style="width:58px;height:58px">${shopItem3dSvg(s.id)}</div>
+        <div>${s.n}</div>
+        <span>${owned?'Steht draußen ✓':'⭐ '+s.c}</span>
+      </button>`;
+    }).join('');
+  }
+
+  d.innerHTML=`
+    <div class="deco-drag-bar" onclick="S.decoExpanded=!S.decoExpanded;drawDecoDrawer()"></div>
+    <div class="row" style="justify-content:space-between;padding:4px 16px">
+      <b>🛋️ Einrichten &amp; Outfits</b>
+      <button class="rb" style="width:32px;height:32px;font-size:14px" onclick="toggleDeco()">✕</button>
+    </div>
+    <div class="deco-tabs">
+      <button class="${S.decoTab==='furn'?'p':''}" onclick="S.decoTab='furn';drawDecoDrawer()">🪑 Möbel ins Zimmer</button>
+      <button class="${S.decoTab==='wear'?'p':''}" onclick="S.decoTab='wear';drawDecoDrawer()">👒 Quaki-Outfits</button>
+      <button class="${S.decoTab==='out'?'p':''}" onclick="S.decoTab='out';drawDecoDrawer()">🌸 Wald-Deko</button>
+    </div>
+    <div class="deco-grid">${grid}</div>
+  `;
+}
+
+function placeFurn(t,cost){
+  if(S.pts<cost){toast('Noch nicht genug ⭐ (du hast '+S.pts+')');return;}
+  S.pts-=cost;
+  S.rooms[S.roomIdx].items.push({id:'f'+Date.now(),t,x:50,y:74});
+  S.scene='room';S.decoOpen=false;
+  save();drawDecoDrawer();renderWorld();
+  toast(t+' ins Zimmer gestellt! 🏠');
+}
+
+function buy(id,cost,isWear){
+  if(S.owned.includes(id)){
+    if(isWear){
+      if(S.worn.includes(id))S.worn=S.worn.filter(x=>x!==id);
+      else S.worn.push(id);
+      save();drawDecoDrawer();renderWorld();
+    }else{
+      S.scene='out';S.decoOpen=false;save();drawDecoDrawer();renderWorld();
+    }
+    return;
+  }
+  if(S.pts<cost){toast('Noch nicht genug ⭐ (du hast '+S.pts+')');return;}
+  S.pts-=cost;S.owned.push(id);
+  if(isWear)S.worn.push(id);
+  save();drawDecoDrawer();renderWorld();
+  toast('Freigeschaltet! 💛');
+}
+
+function openSheet(name){
+  S.curSheet=name;S.decoOpen=false;drawDecoDrawer();
+  document.body.classList.add('sheet-open');
+  document.getElementById('shb').classList.add('on');
+  document.getElementById('sh').classList.add('on');
+  const titles={today:'☀️ Dein Tag heute',day:'📅 Kalender',todo:'✅ Deine To-dos',play:'⏳ Fokus & Ruhe',shop:'⚙️ Backup & Einstellungen'};
+  document.getElementById('sht').textContent=titles[name]||'Quaki';
+  if(name==='today')vToday();
+  else if(name==='day')vDay();
+  else if(name==='todo')vTodo();
+  else if(name==='play')vPlay();
+  else vShop();
+}
+function closeS(){
+  S.curSheet=null;
+  document.body.classList.remove('sheet-open');
+  document.getElementById('shb').classList.remove('on');
+  document.getElementById('sh').classList.remove('on');
+  renderDock();
+}
+function SC(html){document.getElementById('sc').innerHTML=html;}
+
+function vToday(){
+  const td=todayStr();
+  const list=S.tasks.filter(t=>t.date===td);
+  SC(`<div class="clean-hero">
+    <div style="font-weight:800;font-size:17px">💛 Hallo! Schön, dass du heute da bist</div>
+    <div class="mut" style="margin-top:4px">Hake ab, was du schaffst – jeder Punkt bringt ⭐ für Quaki.</div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">🌱 Kleine Gewohnheiten</h2>
+      <button class="g" style="padding:6px 12px;font-size:13px" onclick="openSheet('play')">⏳ Fokus-Timer</button>
+    </div>
+    ${S.habits.map((h,hi)=>`<div class="habit-row">
+      <div style="font-weight:700">${h.n}</div>
+      <div class="wdots">${h.days.map((d,di)=>`<div class="wdot ${d?'on':''}" onclick="toggleHabit(${hi},${di})">${['M','D','M','D','F','S','S'][di]}</div>`).join('')}</div>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">📋 Heute geplant (${list.length})</h2>
+      <button class="p" style="padding:6px 12px;font-size:13px" onclick="quickAddTask()">+ Neu</button>
+    </div>
+    ${list.length?list.map(t=>`<div class="chk">
+      <input type="checkbox" class="sq" ${t.done?'checked':''} onchange="toggleTask('${t.id}')">
+      <div style="flex:1;${t.done?'text-decoration:line-through;opacity:.55':''}">
+        <div style="font-weight:700">${t.txt}</div>
+        <small class="mut">${t.time||'Tag'} · ${t.cat||'Alltag'}</small>
+      </div>
+    </div>`).join(''):'<div class="mut">Heute ist noch alles frei 🌿</div>'}
+  </div>`);
+}
+
+function toggleHabit(hi,di){
+  const h=S.habits[hi];h.days[di]=h.days[di]?0:1;
+  if(h.days[di])toast('+'+gain(2)+' ⭐ Gewohnheit abgehakt!');
+  save();vToday();
+}
+
+function vDay(){
+  const d=new Date(S.selDate+'T12:00:00');
+  const y=d.getFullYear(), m=d.getMonth();
+  const first=new Date(y,m,1);
+  const startOffset=(first.getDay()+6)%7;
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const monthNames=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+  let cells='';
+  for(let i=0;i<startOffset;i++)cells+=`<div class="mc o"></div>`;
+  for(let day=1;day<=daysInMonth;day++){
+    const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const cnt=S.tasks.filter(t=>t.date===iso).length;
+    cells+=`<div class="mc ${iso===todayStr()?'td':''} ${iso===S.selDate?'sel':''}" onclick="S.selDate='${iso}';vDay()">
+      <b>${day}</b>
+      <div class="dts">${Array.from({length:Math.min(3,cnt)},()=>'<i></i>').join('')}</div>
+    </div>`;
+  }
+  const dayTasks=S.tasks.filter(t=>t.date===S.selDate);
+  SC(`<div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <button onclick="shiftMonth(-1)">◀</button>
+      <b style="font-size:17px">${monthNames[m]} ${y}</b>
+      <button onclick="shiftMonth(1)">▶</button>
+    </div>
+    <div class="mg" style="margin-bottom:6px">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div class="mh">${x}</div>`).join('')}</div>
+    <div class="mg">${cells}</div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">📌 ${S.selDate.split('-').reverse().join('.')}</h2>
+      <button class="p" style="padding:6px 12px;font-size:13px" onclick="quickAddTask('${S.selDate}')">+ Termin</button>
+    </div>
+    ${dayTasks.length?dayTasks.map(t=>`<div class="chk">
+      <input type="checkbox" class="sq" ${t.done?'checked':''} onchange="toggleTask('${t.id}')">
+      <div style="flex:1"><b>${t.txt}</b><div class="mut">${t.time||'Ganztägig'}</div></div>
+    </div>`).join(''):'<div class="mut">Keine Einträge an diesem Tag 🌱</div>'}
+  </div>`);
+}
+function shiftMonth(delta){
+  const d=new Date(S.selDate+'T12:00:00');
+  d.setMonth(d.getMonth()+delta);
+  S.selDate=d.toISOString().slice(0,10);vDay();
+}
+
+function vTodo(){
+  SC(`<div class="row" style="margin-bottom:12px">
+    <input id="new-td" placeholder="Neues To-do eingeben …" style="flex:1" onkeydown="if(event.key==='Enter')addTodoInline()">
+    <button class="p" onclick="addTodoInline()">+ Hinzufügen</button>
+  </div>
+  <div class="card">
+    <h2>Offen (${S.tasks.filter(t=>!t.done).length})</h2>
+    ${S.tasks.filter(t=>!t.done).map(t=>`<div class="chk">
+      <input type="checkbox" class="sq" onchange="toggleTask('${t.id}')">
+      <div style="flex:1"><b>${t.txt}</b><div class="mut">${t.date.split('-').reverse().join('.')} ${t.time?'· '+t.time:''}</div></div>
+      <button class="x" onclick="delTask('${t.id}')">✕</button>
+    </div>`).join('')||'<div class="mut">Alles erledigt! 🎉</div>'}
+  </div>
+  <div class="card">
+    <h2>Erledigt (${S.tasks.filter(t=>t.done).length})</h2>
+    ${S.tasks.filter(t=>t.done).map(t=>`<div class="chk" style="opacity:.6">
+      <input type="checkbox" class="sq" checked onchange="toggleTask('${t.id}')">
+      <div style="flex:1;text-decoration:line-through">${t.txt}</div>
+      <button class="x" onclick="delTask('${t.id}')">✕</button>
+    </div>`).join('')||'<div class="mut">Noch nichts abgehakt</div>'}
+  </div>`);
+}
+function addTodoInline(){
+  const inp=document.getElementById('new-td');if(!inp||!inp.value.trim())return;
+  S.tasks.unshift({id:'t'+Date.now(),txt:inp.value.trim(),done:false,date:todayStr(),time:'',cat:'Alltag'});
+  save();renderDock();vTodo();toast('To-do hinzugefügt 🌱');
+}
+function toggleTask(id){
+  const t=S.tasks.find(x=>x.id===id);if(!t)return;
+  t.done=!t.done;
+  if(t.done)toast('+'+gain(5)+' ⭐ Geschafft! 💛');
+  save();renderDock();
+  if(S.curSheet==='today')vToday();
+  else if(S.curSheet==='day')vDay();
+  else if(S.curSheet==='todo')vTodo();
+}
+function delTask(id){S.tasks=S.tasks.filter(x=>x.id!==id);save();renderDock();vTodo();}
+
+function vPlay(){
+  const games=[
+    ['⏱️','Fokus-Timer (25 Min)','Ruhig an einer Sache bleiben – gibt ⭐ +15','startFocus(25)'],
+    ['⚡','Mini-Sprint (5 Min)','Nur 5 Minuten anfangen – ideal gegen Aufschieben','startFocus(5)'],
+    ['🌬️','Atem-Insel','4 Sekunden ein, 4 Sekunden aus – kurz durchatmen','openBreathe()'],
+    ['🌿','Moos-Memo','Kleines Gedächtnisspiel für zwischendurch','openMemo()']
+  ];
+  SC(`<div class="clean-hero">
+    <div style="font-weight:800;font-size:17px">⏳ Fokus &amp; ruhige Pausen</div>
+    <div class="mut" style="margin-top:4px">Kurze Einheiten, kein Druck – Quaki passt auf die Zeit auf 💛</div>
+  </div>
+  ${games.map(g=>`<div class="card" style="cursor:pointer" onclick="${g[3]}">
+    <div class="row" style="justify-content:space-between">
+      <div class="row" style="gap:12px">
+        <div style="font-size:32px">${g[0]}</div>
+        <div><div style="font-weight:800;font-size:16px">${g[1]}</div><div class="mut">${g[2]}</div></div>
+      </div>
+      <span style="font-weight:800;color:#3c634b">Start →</span>
+    </div>
+  </div>`).join('')}`);
+}
+function startFocus(mins){
+  let left=mins*60;
+  const iv=setInterval(()=>{
+    left--;
+    const el=document.getElementById('ftm');
+    if(!el){clearInterval(iv);return;}
+    if(left<=0){clearInterval(iv);ov();toast('+'+gain(mins>=20?15:5)+' ⭐ Fokus geschafft! 💛');return;}
+    el.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');
+  },1000);
+  ov(`<h2>⏳ Fokus-Zeit (${mins} Min)</h2>
+    <div class="breathe"></div>
+    <div id="ftm" style="font-size:42px;font-weight:800;margin:10px 0">${String(mins).padStart(2,'0')}:00</div>
+    <p class="mut">Kein Stress – ein Schritt nach dem anderen 🌱</p>
+    <button class="wide" onclick="clearInterval(${iv});ov()">Beenden</button>`);
+}
+function openBreathe(){
+  ov(`<h2>🌬️ Atem-Insel</h2>
+    <div class="breathe"></div>
+    <p style="font-weight:700">Atme mit dem goldenen Licht ein … und langsam wieder aus 🌿</p>
+    <button class="p wide" onclick="ov();toast('+'+gain(3)+' ⭐ Gut durchgeatmet 💛')">Fertig</button>`);
+}
+function openMemo(){
+  const syms=['🍄','🌿','🌸','🍓','🌙','⭐'];
+  const cards=[...syms,...syms].sort(()=>Math.random()-.5).map((e,i)=>({i,e,open:false,done:false}));
+  let sel=[];
+  window._memoFlip=idx=>{
+    const c=cards[idx];if(c.open||c.done||sel.length>=2)return;
+    c.open=true;sel.push(c);drawM();
+    if(sel.length==2){
+      setTimeout(()=>{
+        if(sel[0].e===sel[1].e){sel[0].done=sel[1].done=true;}
+        else{sel[0].open=sel[1].open=false;}
+        sel=[];drawM();
+        if(cards.every(x=>x.done)){setTimeout(()=>{ov();toast('+'+gain(8)+' ⭐ Alle Paare gefunden! 🌿')},350);}
+      },550);
+    }
+  };
+  function drawM(){
+    ov(`<h2>🌿 Moos-Memo</h2>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
+        ${cards.map(c=>`<button style="height:56px;font-size:26px;padding:0;border-radius:16px;background:${c.done?'#cdebd8':c.open?'#fff':'#3c634b'};color:#fff" onclick="_memoFlip(${c.i})">${c.open||c.done?c.e:'🌱'}</button>`).join('')}
+      </div>
+      <button class="wide" onclick="ov()">Schließen</button>`);
+  }
+  drawM();
+}
+
+function vShop(){
+  SC(`<div class="card">
+    <h2>💾 Spielstand sichern &amp; laden</h2>
+    <p class="mut">Deine Daten bleiben lokal auf deinem Gerät gespeichert. Hier kannst du sie jederzeit als Datei sichern.</p>
+    <div class="row">
+      <button class="g" style="flex:1" onclick="exportBackup()">⬇️ Backup speichern</button>
+      <button style="flex:1" onclick="document.getElementById('inp-backup').click()">⬆️ Backup laden</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>✨ Alle Outfits &amp; Wald-Deko</h2>
+    ${[...SHOP_WEAR,...SHOP_OUT].map(s=>{
+      const owned=S.owned.includes(s.id);
+      return `<div class="chk">
+        <div style="width:44px;height:44px;flex:none">${shopItem3dSvg(s.id)}</div>
+        <div style="flex:1;font-weight:700">${s.n}</div>
+        <button class="${owned?'g':'y'}" onclick="buy('${s.id}',${s.c},${SHOP_WEAR.some(w=>w.id===s.id)});vShop()">${owned?'Besitzt ✓':'⭐ '+s.c}</button>
+      </div>`;
+    }).join('')}
+  </div>`);
+}
+function exportBackup(){
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(S));
+  a.download='quaki-backup-'+todayStr()+'.json';
+  a.click();
+}
+function importBackupFile(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{S=Object.assign(structuredClone(DEFAULT_STATE),JSON.parse(r.result));save();renderWorld();renderDock();vShop();toast('Backup geladen! 💛');}
+    catch(e){toast('Datei konnte nicht gelesen werden');}
+  };
+  r.readAsText(file);
+}
+
+function addMenu(){
+  ov(`<h2>✨ Was möchtest du tun?</h2>
+    <div class="am">
+      <button onclick="ov();quickAddTask()">✅ Neue Aufgabe / Termin eintragen</button>
+      <button onclick="ov();openSheet('play')">⏳ Fokus-Timer oder Atem-Pause starten</button>
+      <button onclick="ov();toggleDeco()">🛋️ Zimmer einrichten &amp; Quaki anziehen</button>
+      <button onclick="ov();setScene('garden')">🌱 Zum Kräuter- &amp; Blumengarten gehen</button>
+    </div>`);
+}
+function quickAddTask(dateIso){
+  const dt=dateIso||todayStr();
+  ov(`<h2>✅ Neuer Eintrag</h2>
+    <input id="qt-txt" placeholder="Was steht an?" style="width:100%;margin-bottom:8px">
+    <div class="row" style="margin-bottom:8px">
+      <input id="qt-date" type="date" value="${dt}" style="flex:1">
+      <input id="qt-time" type="time" style="width:120px">
+    </div>
+    <button class="p wide" onclick="saveQuickTask()">Speichern</button>`);
+}
+function saveQuickTask(){
+  const txt=document.getElementById('qt-txt').value.trim();
+  if(!txt)return;
+  const date=document.getElementById('qt-date').value||todayStr();
+  const time=document.getElementById('qt-time').value||'';
+  S.tasks.unshift({id:'t'+Date.now(),txt,done:false,date,time,cat:'Alltag'});
+  save();ov();renderDock();
+  if(S.curSheet==='today')vToday();
+  else if(S.curSheet==='day')vDay();
+  else if(S.curSheet==='todo')vTodo();
+  toast('Gespeichert! 🌱');
+}
+
+renderWorld();
+renderDock();
+</script>
+</body></html>
